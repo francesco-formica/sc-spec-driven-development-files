@@ -19,9 +19,11 @@ Nano-phases: each phase is one PR-sized chunk of work with a clear done-conditio
 
 ---
 
-## Phase 3 — Seed Data
+## Phase 3 — Seed Data ✓
 - Dev fixtures: sample agents with names, models, and ailments
 - Seed script runnable with one command
+- Minimal home page displaying seeded agents via `GET /api/agents`
+- Layout shell: `Header`, `Footer`, `Layout` components each in their own file; `layout.css` imported by `Layout`
 
 **Done when:** `pnpm db:seed` populates the DB with believable (and funny) test data.
 
