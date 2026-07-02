@@ -1,12 +1,13 @@
+import type { ReactNode } from 'react'
 import './layout.css'
 import Header from './Header'
 import Footer from './Footer'
 
-type Props = {
-  children: React.ReactNode
+type LayoutProps = {
+  children: ReactNode
 }
 
-export default function Layout({ children }: Props) {
+export default function Layout({ children }: LayoutProps) {
   return (
     <div className="site-layout">
       <Header />

@@ -18,3 +18,11 @@ export const agents = sqliteTable('agents', {
   model: text('model').notNull(),
   currentAilmentId: integer('current_ailment_id').references(() => ailments.id),
 })
+
+export const appointments = sqliteTable('appointments', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  agentId: integer('agent_id').notNull().references(() => agents.id),
+  therapyId: integer('therapy_id').notNull().references(() => therapies.id),
+  scheduledAt: text('scheduled_at').notNull(),
+  notes: text('notes'),
+})

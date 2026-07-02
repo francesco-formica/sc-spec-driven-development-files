@@ -27,12 +27,22 @@
 14. Wire `<Home />` to the root route (`/`) in the React Router config
 15. Run the dev server and confirm the page loads in the browser with seeded agent names visible
 
+## Group 6 — Vitest Setup
+
+23. Add `vitest` to `server/devDependencies`; add `"test": "vitest run"` script to `server/package.json`
+24. Refactor `server/src/index.ts`: extract app into `server/src/app.ts` as an exported `createApp(db)` factory; keep `index.ts` as the entry point that wires the real DB and calls `serve()`
+25. Write `server/src/app.test.ts` — test `GET /api/agents` returns 200 and a JSON array using an in-memory SQLite database (no disk I/O, no live server)
+26. Add `vitest`, `@testing-library/react`, `@testing-library/jest-dom`, and `jsdom` to `client/devDependencies`; add `"test": "vitest run"` script to `client/package.json`
+27. Add `client/vitest.config.ts` — jsdom environment, React plugin, jest-dom setup file
+28. Write `client/src/components/layout/Layout.test.tsx` — assert header site name, footer tagline, and children all render
+29. Confirm `npm test` at the root passes in both workspaces
+
 ## Group 5 — Main Layout Component
 
 16. Create `client/src/components/layout/Header.tsx` — site name and navigation placeholder
 17. Create `client/src/components/layout/Footer.tsx` — satirical tagline and year
 18. Create `client/src/components/layout/Layout.tsx` — composes `<Header>`, `<main>{children}</main>`, and `<Footer>`; accepts `children: React.ReactNode`
-19. Create `client/src/components/layout/layout.css` — custom CSS for the layout shell (header/footer height, sticky header, body min-height)
+19. Create `client/src/components/layout/layout.css` — mobile-first CSS for the layout shell (header/footer height, sticky header, body min-height); use `@media (min-width: 640px)` to increase padding on wider screens; guard `html`/`body` against horizontal overflow
 20. Import `layout.css` inside `Layout.tsx`
 21. Refactor `Home.tsx` to render inside `<Layout>` instead of its own `<main>` wrapper
 22. Confirm the page still loads with header and footer visible

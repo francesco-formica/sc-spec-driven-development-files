@@ -59,6 +59,8 @@ A shared shell that wraps every page. Each part lives in its own file under `cli
 
 One file per component is a hard constraint — nothing is co-located or inlined into `Layout.tsx`.
 
+The layout is **mobile-first**: base styles target the smallest viewport (320 px) and `@media` breakpoints (or Tailwind's `sm:`/`md:` prefixes) layer in wider-screen refinements. No horizontal scroll must appear at any viewport width.
+
 ## Home Page
 
 A single React page served at `/`, rendered inside `<Layout>`.
@@ -67,7 +69,20 @@ A single React page served at `/`, rendered inside `<Layout>`.
 - **Tagline:** one short, tongue-in-cheek line (e.g. "Where AI agents come to recover from you.")
 - **Agent list:** names of all agents returned by `GET /api/agents` — no detail, no actions, just proof the data flows
 - **Styling:** Tailwind for page content; `layout.css` for the layout shell; readable but not polished (polish is Phase 7)
+- **Responsive:** content must be legible and usable at 320 px; agent list items stack vertically on narrow viewports and sit side-by-side on `sm` and wider
 - The API route `GET /api/agents` must be added to the Hono server for this page to work
+
+## Testing
+
+Vitest is the test runner for both workspaces. `npm test` at the root runs both in sequence.
+
+**Server** (`server/src/**/*.test.ts`):
+- Routes are tested via `app.request()` with an in-memory SQLite database — no live server, no disk I/O
+- `createApp(db)` accepts an injected database so each test suite gets a clean, isolated instance
+
+**Client** (`client/src/**/*.test.tsx`):
+- Components are tested with `@testing-library/react` in a `jsdom` environment
+- Assertions target rendered output, not implementation details
 
 ## Out of Scope
 

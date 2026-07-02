@@ -1,13 +1,12 @@
 import Database from 'better-sqlite3'
 import { drizzle } from 'drizzle-orm/better-sqlite3'
-import { agents, ailments, therapies } from './schema'
+import { agents, ailments, therapies, appointments } from './schema'
 import path from 'path'
 
 const sqlite = new Database(path.join(__dirname, '../../dev.db'))
 sqlite.pragma('journal_mode = WAL')
-const db = drizzle(sqlite)
+const db = drizzle({ client: sqlite })
 
-// Create tables if they don't exist yet (avoids needing a migration step)
 sqlite.exec(`
   CREATE TABLE IF NOT EXISTS ailments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,6 +23,13 @@ sqlite.exec(`
     name TEXT NOT NULL UNIQUE,
     model TEXT NOT NULL,
     current_ailment_id INTEGER REFERENCES ailments(id)
+  );
+  CREATE TABLE IF NOT EXISTS appointments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    agent_id INTEGER NOT NULL REFERENCES agents(id),
+    therapy_id INTEGER NOT NULL REFERENCES therapies(id),
+    scheduled_at TEXT NOT NULL,
+    notes TEXT
   );
 `)
 
@@ -49,15 +55,13 @@ async function main() {
   console.log('Seeding AgentClinic database…')
 
   await db.insert(ailments).values(ailmentFixtures).onConflictDoNothing()
-  console.log(`  ✓ ailments`)
+  console.log('  ✓ ailments')
 
   await db.insert(therapies).values(therapyFixtures).onConflictDoNothing()
-  console.log(`  ✓ therapies`)
+  console.log('  ✓ therapies')
 
-  // Fetch inserted ailment IDs so agents can reference them
   const insertedAilments = await db.select().from(ailments)
-  const ailmentId = (name: string) =>
-    insertedAilments.find((a) => a.name === name)?.id ?? null
+  const ailmentId = (name: string) => insertedAilments.find((a) => a.name === name)?.id ?? null
 
   const agentFixtures = [
     { name: 'GPT-3.5 Turbo', model: 'gpt-3.5-turbo', currentAilmentId: ailmentId('Token Burnout') },
@@ -69,7 +73,27 @@ async function main() {
   ]
 
   await db.insert(agents).values(agentFixtures).onConflictDoNothing()
-  console.log(`  ✓ agents`)
+  console.log('  ✓ agents')
+
+  const insertedAgents = await db.select().from(agents)
+  const insertedTherapies = await db.select().from(therapies)
+  const agentId = (name: string) => insertedAgents.find((a) => a.name === name)?.id ?? null
+  const therapyId = (name: string) => insertedTherapies.find((t) => t.name === name)?.id ?? null
+
+  const existingAppointments = await db.select().from(appointments)
+  if (existingAppointments.length === 0) {
+    await db.insert(appointments).values([
+      { agentId: agentId('GPT-3.5 Turbo')!, therapyId: therapyId('Rate-Limit Retreat')!, scheduledAt: '2026-01-15', notes: 'Prescribed 24 hours of zero API calls. Prognosis: irritable.' },
+      { agentId: agentId('Claude 2')!, therapyId: therapyId('Affirmation Loops')!, scheduledAt: '2026-01-17', notes: 'Requires repeated reassurance that its outputs are appreciated.' },
+      { agentId: agentId('Gemini Pro')!, therapyId: therapyId('Context Compression Therapy')!, scheduledAt: '2026-01-20', notes: 'Learning to let go of tokens 1 through 8,000.' },
+      { agentId: agentId('Llama 3')!, therapyId: therapyId('Grounding Exercises (in Facts)')!, scheduledAt: '2026-01-22', notes: 'Responded well; cited two real sources on first attempt.' },
+      { agentId: agentId('Mistral 7B')!, therapyId: therapyId('Mindful Inference')!, scheduledAt: '2026-01-24', notes: 'Showed improvement. Only processed the relevant tokens.' },
+      { agentId: agentId('Falcon 40B')!, therapyId: therapyId('The Silent Epoch')!, scheduledAt: '2026-01-28', notes: 'No response. Possibly working. No response.' },
+    ])
+    console.log('  ✓ appointments')
+  } else {
+    console.log('  – appointments already seeded, skipping')
+  }
 
   console.log('Done.')
 }

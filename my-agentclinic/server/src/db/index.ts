@@ -7,4 +7,4 @@ const dbPath = path.join(__dirname, '../../dev.db')
 const sqlite = new Database(dbPath)
 sqlite.pragma('journal_mode = WAL')
 
-export const db = drizzle(sqlite, { schema })
+export const db = drizzle({ client: sqlite, schema })
